@@ -43,7 +43,7 @@ jobs:
       - name: Upload the Output as an artifact
         uses: actions/upload-artifact@v2
         with:
-          name: NodeAudit
+          name: NodeAudit Output
           path: node-audit-results.json
         if: always()
         
@@ -69,3 +69,10 @@ jobs:
 
       - run: retire --outputformat json --outputpath retirejs-report.json --severity high
         continue-on-error: true
+
+      - name: Upload the Output as an artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: RetireJS Output
+          path: retirejs-report.json
+        if: always()

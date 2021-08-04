@@ -23,7 +23,7 @@ jobs:
           echo "Functional Testing is going on"
           sleep 5
 
-  security-testing:
+  component-analysis:
     runs-on: ubuntu-latest
     needs: functional-testing
     steps:
@@ -45,12 +45,25 @@ jobs:
           name: NodeAudit
           path: node-audit-results.json
         if: always()
+        continue-on-error: true
 
   deployment:
     runs-on: ubuntu-latest
-    needs: security-testing
+    needs: component-analysis
     steps: 
       - name: Deployment Steps
         run: |
           echo "Deployment is going on"
           sleep 30
+
+  frontend-static-scan:
+    runs-on: ubuntu-latest
+    needs: functional-testing
+    steps:
+      - uses: actions/checkout@v2
+
+      - run: npm install
+
+      - run: npm install -g retire
+
+      - run: retire

@@ -18,10 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps: 
-      - name: Install and Configure Node.js
+      - name: Functional Testing
         run: |
           echo "Functional Testing is going on"
-          sleep 30
+          sleep 5
 
   security-testing:
     runs-on: ubuntu-latest
@@ -35,7 +35,7 @@ jobs:
 
       - name: Perform Node.js Audit and Output to Json file
         run: npm audit --json >> node-audit-results.json
-        
+
       - name: List the files available
         run: ls
       
@@ -45,3 +45,12 @@ jobs:
           name: NodeAudit
           path: node-audit-results.json
         if: always()
+
+  deployment:
+    runs-on: ubuntu-latest
+    needs: security-testing
+    steps: 
+      - name: Deployment Steps
+        run: |
+          echo "Deployment is going on"
+          sleep 30

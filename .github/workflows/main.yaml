@@ -35,6 +35,7 @@ jobs:
 
       - name: Perform Node.js Audit and Output to Json file
         run: npm audit --json >> node-audit-results.json
+        continue-on-error: true
 
       - name: List the files available
         run: ls
@@ -45,7 +46,7 @@ jobs:
           name: NodeAudit
           path: node-audit-results.json
         if: always()
-    continue-on-error: true
+        
 
   deployment:
     runs-on: ubuntu-latest
@@ -66,4 +67,5 @@ jobs:
 
       - run: npm install -g retire
 
-      - run: retire
+      - run: retire --outputformat json --outputpath retirejs-report.json --severity high
+        continue-on-error: true

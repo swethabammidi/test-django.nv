@@ -1,29 +1,47 @@
-name: Shell Commands 
+name: Node.JS Testing Workflow
 
 on: [push]
 
 jobs:
-  run-shell-command:
+  build:
     runs-on: ubuntu-latest
     steps: 
-      - name: echo a string
-        run: echo "Hello World"
-      - name: multiline script 
+      - name: Install and Configure Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "12"
+      - name: Verify Weather Node is Installed or Not
+        run: node --version
+
+
+  functional-testing:
+    runs-on: ubuntu-latest
+    needs: build
+    steps: 
+      - name: Install and Configure Node.js
         run: |
-           node -v 
-           npm -v
-      - name: python Command 
-        run: |
-          import platform 
-          print
-          (platform.processor())
-        shell: python
-  run-windwos-commands:
-    runs-on: windows-latest
-    needs: ["run-shell-command"]
+          echo "Functional Testing is going on"
+          sleep 30
+
+  security-testing:
+    runs-on: ubuntu-latest
+    needs: functional-testing
     steps:
-      - name: Directory PowerShell
-        run: Get-Location 
-      - name: Directory Bash 
-        run: pwd 
-        shell: bash
+      - name: Checkout the Code
+        uses: actions/checkout@v2
+
+      - name: Install the Libraries or Node Modules
+        run: npm install
+
+      - name: Perform Node.js Audit and Output to Json file
+        run: npm audit --json >> node-audit-results.json
+        
+      - name: List the files available
+        run: ls
+      
+      - name: Upload the Output as an artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: NodeAudit
+          path: node-audit-results.json
+        if: always()

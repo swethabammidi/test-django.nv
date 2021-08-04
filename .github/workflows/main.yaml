@@ -45,7 +45,7 @@ jobs:
           name: NodeAudit
           path: node-audit-results.json
         if: always()
-  continue-on-error: true
+    continue-on-error: true
 
   deployment:
     runs-on: ubuntu-latest

@@ -5,18 +5,19 @@ on:
       - main
 
 jobs:
-  secret-scanning:
-    name: SecretScanning-Python-Truffle Hog
+  docker-lint:
+    name: LintChecking-Docker-Hadolint
     runs-on: ubuntu-latest
+    # needs: secret-scanning
     steps:
       - uses: actions/checkout@v3
 
-      - name: Run Truffle Hog
-        run: docker run --rm -v $(pwd):/src hysnsec/trufflehog --json --regex --entropy=False file:///src > trufflehog-results.json
+      - name: Run Hadolint
+        run: docker run --rm -i hadolint/hadolint < Dockerfile | tee hadolint-result.txt
         continue-on-error: true
       
-      - name: Upload the Output as an artifact
+      - name: Upload the artifacts
         uses: actions/upload-artifact@v3.1.1
         with:
-          name: Truffle Hog Output
-          path: trufflehog-results.json
+          name: hadolint-result
+          path: hadolint-result.txt

@@ -1,29 +1,117 @@
-name: Node.JS Testing Workflow
-
-on: [push]
+name: DevSecOps for a Polygot Application
+on:
+  push:                                       
+    branches:                              
+      - main
 
 jobs:
   build:
+    name: Build Job - Python
     runs-on: ubuntu-latest
-    steps: 
-      - name: Install and Configure Node.js
-        uses: actions/setup-node@v2
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup python
+        uses: actions/setup-python@v2
         with:
-          node-version: "12"
-      - name: Verify Weather Node is Installed or Not
-        run: node --version
+          python-version: '3.6'
 
+      - run: |
+          pip3 install --upgrade virtualenv
+          virtualenv env
+          source env/bin/activate
+          pip install -r requirements.txt
+          python manage.py check
 
-  functional-testing:
+  test:
+    name: Functional Testing Job - Python
     runs-on: ubuntu-latest
     needs: build
-    steps: 
-      - name: Functional Testing
-        run: |
-          echo "Functional Testing is going on"
-          sleep 5
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.6'
+
+      - run: |
+          pip3 install --upgrade virtualenv
+          virtualenv env
+          source env/bin/activate
+          pip install -r requirements.txt
+          python manage.py test taskManager
+
+  oast-backend:
+    name: SAST Backend Job - Python - Safety
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v2
+
+      - run: docker run --rm -v $(pwd):/src hysnsec/safety check -r requirements.txt --json | tee oast-results.json
+        continue-on-error: true             # allow the build to fail, similar to "allow_failure: true" in GitLab
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Safety
+          path: oast-results.json
+        if: always()                        # what is this for?
+
+  oast-frontend:
+    name: SAST Frontend Job - Node JS - RetireJS
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '10.x'
+
+      - run: npm install
+
+      - run: docker run --rm -v $(pwd):/src -w /src hysnsec/retire --outputformat json --outputpath retirejs-report.json --severity high
+        continue-on-error: true
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: RetireJS
+          path: retirejs-report.json
+        if: always()                        # what is this for?
+
+  oast-snyk:
+    name: Secret Scanning - Node JS - Synk
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@master      
+      - uses: snyk/actions/setup@master
+      - uses: actions/setup-go@v1
+        with:
+          go-version: "1.13"
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '10.x'
+
+      - name: Install Node modules
+        run: npm install
+
+      - name: Run Snyk
+        run: snyk test --json > snyk-results.json
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Snyk               
+          path: snyk-results.json
+        if: always()
 
   component-analysis:
+    name: Component Analysis - Python - NPM Audit
     runs-on: ubuntu-latest
     needs: functional-testing
     steps:
@@ -45,56 +133,4 @@ jobs:
         with:
           name: NodeAudit Output
           path: node-audit-results.json
-        if: always()
-        
-
-  deployment:
-    runs-on: ubuntu-latest
-    needs: [component-analysis, frontend-static-scan, backend-static-scan]
-    steps: 
-      - name: Deployment Steps
-        run: |
-          echo "Deployment is going on"
-          sleep 30
-
-  frontend-static-scan:
-    runs-on: ubuntu-latest
-    needs: functional-testing
-    steps:
-      - uses: actions/checkout@v2
-
-      - run: npm install
-
-      - run: npm install -g retire
-
-      - run: retire --outputformat json --outputpath retirejs-report.json --severity high
-        continue-on-error: true
-
-      - name: Upload the Output as an artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: RetireJS Output
-          path: retirejs-report.json
-        if: always()
-
-  backend-static-scan:
-    runs-on: ubuntu-latest
-    needs: functional-testing
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Verify Pip
-        run: pip --version
-
-      - name: Install Safety
-        run: pip install safety
-
-      - name: Run Safety
-        run: safety check -r requirements.txt --json | tee backend-static-scan-output.json
-        continue-on-error: true
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: SafetyOutput
-          path: backend-static-scan-output.json
         if: always()

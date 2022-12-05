@@ -5,19 +5,20 @@ on:
       - main
 
 jobs:
-  docker-lint:
-    name: LintChecking-Docker-Hadolint
+  build:
+    name: Build Job - Python
     runs-on: ubuntu-latest
-    # needs: secret-scanning
     steps:
       - uses: actions/checkout@v3
 
-      - name: Run Hadolint
-        run: docker run --rm -i hadolint/hadolint < Dockerfile | tee hadolint-result.txt
-        continue-on-error: true
-      
-      - name: Upload the artifacts
-        uses: actions/upload-artifact@v3.1.1
+      - name: Setup python
+        uses: actions/setup-python@v4
         with:
-          name: hadolint-result
-          path: hadolint-result.txt
+          python-version: '3.6'
+
+      - run: |
+          pip3 install --upgrade virtualenv
+          virtualenv env
+          source env/bin/activate
+          pip install -r requirements.txt
+          python manage.py check

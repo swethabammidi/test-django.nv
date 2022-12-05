@@ -25,3 +25,9 @@ jobs:
       - name: Run OSS Index
         run: docker run --rm -v $(pwd):/src hysnsec/ossindex -r /src -f json -o ossindex-results.json
         continue-on-error: true
+
+      - name: Upload the Output as an artifact
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: OSS Index Output
+          path: ossindex-results.json

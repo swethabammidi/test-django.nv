@@ -179,7 +179,7 @@ jobs:
   docker-lint:
     name: Lint - Dockerfile
     runs-on: ubuntu-latest
-    needs: test
+    #needs: test
     steps:
       - uses: actions/checkout@v3
 

@@ -8,7 +8,6 @@ jobs:
   ossscan-run:
     name: OSS Audit - Python - OSS Index
     runs-on: ubuntu-latest
-    needs: test
     steps:
       - uses: actions/checkout@v3
 

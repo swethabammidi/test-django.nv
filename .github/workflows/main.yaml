@@ -5,7 +5,6 @@ on:
       - main
 
 jobs:
-
   secret-scanning:
     name: SecretScanning-Python-Truffle Hog
     runs-on: ubuntu-latest

@@ -64,6 +64,14 @@ jobs:
           path: node-audit-results.json
         if: always()
 
+# Integrate DefectDojo
+invoke-python-script:
+    name: DefectDojoIntegration
+    runs-on: ubuntu-latest
+    needs: component-analysis   
+    steps:
+      - name: Invoke
+        run: python3 import.py
 
 # Build with Sleep Statement
   build:

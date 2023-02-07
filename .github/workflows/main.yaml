@@ -111,6 +111,28 @@ jobs:
   #         pip install -r requirements.txt
   #         python manage.py check
   #       continue-on-error: true
+  
+  build:
+     name: Build-Job-Python
+     runs-on: ubuntu-latest
+     needs : docker-lint
+     steps:
+       - uses: actions/checkout@v3
+
+       - name: Setup python
+         uses: actions/setup-python@v4
+         with:
+           python-version: '3'
+         continue-on-error: true
+
+      - run: |
+           pip3 install --upgrade virtualenv
+           virtualenv env
+           source env/bin/activate
+           pip install -r requirements.txt
+           python import.py check
+         continue-on-error: true
+
 
   # test:
   #   name: FunctionalTesting-Job-Python

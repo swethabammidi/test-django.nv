@@ -71,7 +71,7 @@ jobs:
     needs: component-analysis   
     steps:
       - name: Invoke
-        run: python import.py       
+        run: pip python import.py       
 
 # Build with Sleep Statement
   build:

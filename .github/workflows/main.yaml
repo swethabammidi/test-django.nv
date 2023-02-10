@@ -216,11 +216,49 @@ jobs:
           name: Snyk               
           path: snyk-results.json
         if: always()
-        
+  
+  import-scan-results:
+    name: Import Scan Results
+    runs-on: ubuntu-latest
+    needs: [oast-backend-safety, oast-backend-bandit, oast-frontend-retirejs, oast-snyk]
+    steps:
+      - name: Download a Build Artifact
+        uses: actions/download-artifact@v3.0.2
+        with:
+          # Artifact name
+          name: Bandit Output
+          # Destination path
+          path: .
+          
+      - name: List File
+        run: ls
+
+#       - name: Run Import 
+#         run: |
+#           curl -X 'POST' \
+#             'http://34.75.155.70:8080/api/v2/import-scan/' \
+#             -H 'accept: application/json' \
+#             -H 'Content-Type: multipart/form-data' \
+#             -H 'X-CSRFToken: WM7nrogmjbj7jN4lpJ74gFyYKV4UKn5EEZM3uzUzpLjPaq6ZqbfIQK5eGvLq6aj4' \
+#             -F 'minimum_severity=Info' \
+#             -F 'active=true' \
+#             -F 'verified=true' \
+#             -F 'scan_type=Bandit Scan' \
+#             -F 'file=@bandit-results.json;type=application/json' \
+#             -F 'product_name=sample-app' \
+#             -F 'engagement_name=sample-api-import' \
+#             -F 'engagement=4' \
+#             -F 'auto_create_context=true' \
+#             -F 'close_old_findings=false' \
+#             -F 'close_old_findings_product_scope=false' \
+#             -F 'push_to_jira=false' \
+#             -F 'create_finding_groups_for_all_findings=true'
+
+  
   dev-deployment:
     name: DevDeployment
     runs-on: ubuntu-latest
-    needs: [oast-backend-safety, oast-backend-bandit, oast-frontend-retirejs, oast-snyk]
+    needs: [oast-backend-safety, oast-backend-bandit, oast-frontend-retirejs, oast-snyk, import-scan-results]
     steps:
       - name: Sleep for 10 seconds
         run: sleep 10

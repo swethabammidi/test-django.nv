@@ -79,4 +79,11 @@ jobs:
 
     - name: List SARIF File
       run: |
-        ls -la ../
+        ls -la ../results/*.sarif
+
+    - name: Upload the artifacts
+      uses: actions/upload-artifact@v3.1.1
+      with:
+        name: sarif-files
+        path: ../results/*.sarif
+

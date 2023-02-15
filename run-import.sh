@@ -10,23 +10,19 @@ export PRODUCT_NAME="sample-app"
 export ENGAGEMENT_NAME="sample-api-import"
 export ENGAGEMENT_ID="4"
 
-echo $URL
-
-echo ${URL}
-
 curl -X 'POST' \
-  '${URL}' \
+  'http://34.75.155.70:8080/api/v2/import-scan/' \
   -H 'accept: application/json' \
   -H 'Content-Type: multipart/form-data' \
-  -H 'Authorization: Token ${TOKEN}' \
-  -F 'minimum_severity=${SEVERITY}' \
+  -H 'Authorization: Token e3fbd9dc2398f0e7aad4fefcc09a178793cba2df' \
+  -F 'minimum_severity=Info' \
   -F 'active=true' \
   -F 'verified=true' \
   -F 'scan_type=Bandit Scan' \
   -F 'file=@bandit-results.json;type=application/json' \
-  -F 'product_name=${PRODUCT_NAME}' \
-  -F 'engagement_name=${ENGAGEMENT_NAME}' \
-  -F 'engagement=${ENGAGEMENT_ID}' \
+  -F 'product_name=sample-app' \
+  -F 'engagement_name=sample-api-import' \
+  -F 'engagement=4' \
   -F 'auto_create_context=true' \
   -F 'close_old_findings=false' \
   -F 'close_old_findings_product_scope=false' \

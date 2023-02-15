@@ -78,5 +78,5 @@ jobs:
 
 
     - name: List SARIF File
-      run: | 
-        ls -la
+      run: |
+        ls -la ../

@@ -10,6 +10,10 @@ export PRODUCT_NAME="sample-app"
 export ENGAGEMENT_NAME="sample-api-import"
 export ENGAGEMENT_ID="4"
 
+echo $URL
+
+echo ${URL}
+
 curl -X 'POST' \
   '${URL}' \
   -H 'accept: application/json' \

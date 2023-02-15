@@ -222,6 +222,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [oast-backend-safety, oast-backend-bandit, oast-frontend-retirejs, oast-snyk]
     steps:
+      - uses: actions/checkout@master
       - name: Download a Build Artifact
         uses: actions/download-artifact@v3.0.2
         with:

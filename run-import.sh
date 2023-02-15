@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # Define variables
-URL="http://34.75.155.70:8080/api/v2/import-scan/"
-TOKEN="e3fbd9dc2398f0e7aad4fefcc09a178793cba2df"
-SEVERITY="Info"
-#SCAN_TYPE="oast-results Scan"
-#FILE_PATH="oast-results.json"
-PRODUCT_NAME="sample-app"
-ENGAGEMENT_NAME="sample-api-import"
-ENGAGEMENT_ID="4"
+export URL="http://34.75.155.70:8080/api/v2/import-scan/"
+export TOKEN="e3fbd9dc2398f0e7aad4fefcc09a178793cba2df"
+export SEVERITY="Info"
+export #SCAN_TYPE="oast-results Scan"
+export #FILE_PATH="oast-results.json"
+export PRODUCT_NAME="sample-app"
+export ENGAGEMENT_NAME="sample-api-import"
+export ENGAGEMENT_ID="4"
 
 curl -X 'POST' \
   '${URL}' \

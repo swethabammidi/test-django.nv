@@ -24,10 +24,10 @@
   "comments": {
     "//": "a9 insecure components"
   },
-  "engines": {
-    "node": "4.4.x",
-    "npm": "2.15.x"
-  },
+//  "engines": {
+//    "node": "4.4.x",
+//    "npm": "2.15.x"
+//  },
   "scripts": {
     "start": "node server.js",
     "test": "node node_modules/grunt-cli/bin/grunt test",

@@ -4,80 +4,75 @@ on:
     branches:                              
       - main
 
-jobs:
-  secret-scanning:
-    name: SecretScanning-Python-Truffle Hog
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Run Truffle Hog
-        run: docker run --rm -v $(pwd):/src hysnsec/trufflehog --json --regex --entropy=False file:///src > trufflehog-results.json
-        continue-on-error: true
-      
-      - name: Upload the Output as an artifact
-        uses: actions/upload-artifact@v3.1.1
-        with:
-          name: Truffle Hog Output
-          path: trufflehog-results.json
-
-
-  docker-lint:
-    name: LintChecking-Docker-Hadolint
-    runs-on: ubuntu-latest
-    needs: secret-scanning
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Run Hadolint
-        run: docker run --rm -i hadolint/hadolint < Dockerfile | tee hadolint-result.txt
-        continue-on-error: true
-      
-      - name: Upload the artifacts
-        uses: actions/upload-artifact@v3.1.1
-        with:
-          name: hadolint-result
-          path: hadolint-result.txt
-
+jobs:  
   component-analysis:
     name: ComponentAnalysis-Node-NPMAudit
     runs-on: ubuntu-latest
-    needs: docker-lint
     steps:
-      - name: Checkout the Code
-        uses: actions/checkout@v3
-
-      - name: Install the Libraries or Node Modules
-        run: npm install
-
-      - name: Perform Node.js Audit and Output to Json file
-        run: npm audit --json >> node-audit-results.json
-        continue-on-error: true
-
-      - name: List the files available
-        run: ls
+    - name: Checkout the Code
+      uses: actions/checkout@v3
       
-      - name: Upload the Output as an artifact
+    - name: Install the Libraries or Node Modules
+      uses: actions/setup-node@v3
+      with:
+        node-version: 12
+        
+    - name: Perform Node.js Audit and Output to Json file
+      run: npm install &&
+           npm install -g audit-ci &&
+           audit-ci --report true --json ./audit-ci-report.json --config ./audit-ci.json >> reports.json
+      continue-on-error: true
+      
+    - name: Perform Node.js Audit and Output to Json file
+      run: |
+       #!/bin/bash
+       # Remove the first two lines of the file
+       tail -n +3 reports.json > temp.json
+       # Remove the last line of the file
+       head -n -1 temp.json > NPMAuditReport.json
+       # Clean up temporary file
+       rm temp.json
+          
+    - name: Upload the Output as an artifact
+      uses: actions/upload-artifact@v3.1.1
+      with:
+        name: Node-Audit-Output
+        path: NPMAuditReport.json
+      if: always() 
+
+  Trivy-scan:
+    name: Trivy Vulnerability Scan
+    runs-on: ubuntu-latest
+    needs: component-analysis
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install trivy
+      
+      - name: Scan image with Trivy
+        run: |
+          trivy image golang:latest --format json --output trivy-results.json
+      
+      - name: Upload results
         uses: actions/upload-artifact@v3.1.1
         with:
-          name: NodeAudit Output
-          path: node-audit-results.json
-        if: always()
+          name: trivy-results
+          path: trivy-results.json   
 
-# Integrate DefectDojo
-  #invoke-python-script:
-  #  name: DefectDojoIntegration
-  #  runs-on: ubuntu-latest
-  #  needs: component-analysis   
-  #  steps:
-  #    - name: Invoke
-   #     run: python import.py       
 
 # Build with Sleep Statement
   build:
     name: Build Stage
     runs-on: ubuntu-latest
-    needs: component-analysis
+    needs: Trivy-scan
     steps:
       - name: Sleep for 10 seconds
         run: sleep 10
@@ -89,81 +84,7 @@ jobs:
     needs: build
     steps:
       - name: Sleep for 10 seconds
-        run: sleep 10
-
-  # build:
-  #   name: Build-Job-Python
-  #   runs-on: ubuntu-latest
-  #   needs : docker-lint
-  #   steps:
-  #     - uses: actions/checkout@v3
-
-  #     - name: Setup python
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: '3'
-  #       continue-on-error: true
-
-  #     - run: |
-  #         pip3 install --upgrade virtualenv
-  #         virtualenv env
-  #         source env/bin/activate
-  #         pip install -r requirements.txt
-  #         python manage.py check
-  #       continue-on-error: true
-  
-  # test:
-  #   name: FunctionalTesting-Job-Python
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   steps:
-  #     - uses: actions/checkout@v3
-
-  #     - name: Setup python
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: '3.6'
-
-  #     - run: |
-  #         pip3 install --upgrade virtualenv
-  #         virtualenv env
-  #         source env/bin/activate
-  #         pip install -r requirements.txt
-  #         python manage.py test taskManager
-
-  oast-backend-safety:
-    name: SAST-Backend-Job-Python-Safety
-    runs-on: ubuntu-latest
-    needs: functional-testing
-    steps:
-      - uses: actions/checkout@v3
-
-      - run: docker run --rm -v $(pwd):/src hysnsec/safety check -r requirements.txt --json | tee oast-results.json
-        continue-on-error: true             # allow the build to fail, similar to "allow_failure: true" in GitLab
-
-      - uses: actions/upload-artifact@v3.1.1
-        with:
-          name: Safety
-          path: oast-results.json
-        if: always()                        # what is this for?
-
-  oast-backend-bandit:
-    name: SAST-Backend-Job-Python-Bandit
-    runs-on: ubuntu-latest
-    needs: functional-testing
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        
-      - name: Run Bandit
-        run: docker run --rm -v $(pwd):/src hysnsec/bandit -r /src -f json > bandit-results.json
-        continue-on-error: true
-
-      - name: Upload the Output as an artifact
-        uses: actions/upload-artifact@v3.1.1
-        with:
-          name: Bandit Output
-          path: bandit-results.json
+        run: sleep 10 
 
   oast-frontend-retirejs:
     name: SAST-Frontend-Job-NodeJS-RetireJS
@@ -185,52 +106,70 @@ jobs:
         with:
           name: RetireJS
           path: retirejs-report.json
-        if: always()                        # what is this for?
+        if: always()  
 
-  oast-snyk:
-    name: SecretScanning-NodeJS-Synk
+
+  nikto-scan:
+    name: DAST-Nikto Scan
     runs-on: ubuntu-latest
-    needs: functional-testing
+    needs: oast-frontend-retirejs    
     steps:
-      - uses: actions/checkout@master      
-      - uses: snyk/actions/setup@master
-      - uses: actions/setup-go@v1
-        with:
-          go-version: "1.13"
-
-      - uses: actions/setup-node@v3.5.1
-        with:
-          node-version: '10.x'
-
-      - name: Install Node modules
-        run: npm install
-
-      - name: Run Snyk
-        run: snyk test --json > snyk-results.json
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        continue-on-error: true
-
-      - uses: actions/upload-artifact@v3.1.1
-        with:
-          name: Snyk               
-          path: snyk-results.json
-        if: always()
-  
-  import-scan-results:
-    name: Import Scan Results
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Install Nikto
+      run: |
+       sudo apt-get update
+       sudo apt-get install nikto
+       #git clone https://github.com/sullo/nikto
+       #cd nikto/program
+       #./nikto.pl -h 34.123.201.87 -T webservers -maxtime 1800 -Format json -o nikto-results.json
+       
+    #- name: Create Nikto artifact directory
+    #  run: mkdir nikto-artifacts
+           
+    - name: Run Nikto scan
+      run: nikto -h 34.123.201.87 -o scan.xml
+      #run: nikto -h 34.123.201.87 -Format json -output 'nikto-output.json'
+      # run: nikto -h 34.123.201.87 -Format json -o nikto-artifacts/nikto.json
+      
+    - name: Create Nikto artifact
+      uses: actions/upload-artifact@v3.1.1
+      with:
+       name: nikto-results
+       path: scan.xml
+   
+  nmap-scan:
+    name: DAST-NMAP Scan
     runs-on: ubuntu-latest
-    needs: [oast-backend-safety, oast-backend-bandit, oast-frontend-retirejs, oast-snyk]
+    needs: oast-frontend-retirejs
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install NMAP
+        run: sudo apt-get update && sudo apt-get install -y nmap
+      - name: Run NMAP scan
+        run: nmap -oX nmap-results.xml 34.123.201.87
+      - name: Save NMAP results
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: nmap-results
+          path: nmap-results.xml
+                    
+  export-scan-results:
+    name: Export Scan Results
+    runs-on: ubuntu-latest
+    needs: [nmap-scan, nikto-scan]
     steps:
       - uses: actions/checkout@master
       
-      - name: Download a Build Artifact
-        uses: actions/download-artifact@v3.0.2
-        with:
-          # Artifact name
-          name: Bandit Output
-          # Destination path
-          path: .
+      #- name: Download a Build Artifact
+       # uses: actions/download-artifact@v3.0.2
+       # with:
+       #   # Artifact name
+        #  name: Bandit Output
+        #  # Destination path
+        #  path: .
 
       - name: Download a Build Artifact
         uses: actions/download-artifact@v3.0.2
@@ -239,16 +178,48 @@ jobs:
           name: RetireJS
           # Destination path
           path: .
-
+          
+      - name: Download a Build Artifact
+        uses: actions/download-artifact@v3.0.2
+        with:
+          # Artifact name
+          name: nikto-results
+          # Destination path
+          path: .
+          
+      - name: Download a Build Artifact
+        uses: actions/download-artifact@v3.0.2
+        with:
+          # Artifact name
+          name: nmap-results
+          # Destination path
+          path: .
+     
+      - name: Download a Build Artifact
+        uses: actions/download-artifact@v3.0.2
+        with:
+          # Artifact name
+          name: trivy-results
+          # Destination path
+          path: .
+          
+      - name: Download a Build Artifact
+        uses: actions/download-artifact@v3.0.2
+        with:
+          # Artifact name
+          name: Node-Audit-Output
+          # Destination path
+          path: .    
+          
       - name: Run Import 
         run: |
-          chmod 755 run-import.sh
-          bash run-import.sh
-          
+          chmod 755 test-run-import.sh
+          bash test-run-import.sh
+                
   dev-deployment:
     name: DevDeployment
     runs-on: ubuntu-latest
-    needs: [oast-backend-safety, oast-backend-bandit, oast-frontend-retirejs, oast-snyk, import-scan-results]
+    needs: [oast-frontend-retirejs, export-scan-results, Trivy-scan, nmap-scan, nikto-scan, component-analysis]
     steps:
       - name: Sleep for 10 seconds
         run: sleep 10

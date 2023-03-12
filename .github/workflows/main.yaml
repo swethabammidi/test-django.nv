@@ -221,7 +221,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [oast-frontend-retirejs, export-scan-results, Trivy-scan, nmap-scan, nikto-scan, component-analysis]
     steps:
-      - name: Sleep for 10 seconds
+      - name: Sleep for 10 second
         run: sleep 10
 
   preprod-deployment:

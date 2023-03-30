@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Define variables
-export URL="http://3.108.44.52:8080/api/v2/import-scan/"
-export TOKEN="e596a9d6f75615c59f0a80b4afa7acf695e8df61"
+export URL="http://4.240.74.38:8080/api/v2/import-scan/"
+export TOKEN="e1fe0d1764c7411b1d7029b2d94ddcbc92e62e75"
 export X-CSRFTOKEN="xjzuPkDwJQJ2MYCypdA9LTVWD26zBxkAjMoiZeUWNucFpk9mtm7cWhGPJI4HjaCT"
 export SEVERITY="Info"
 export #SCAN_TYPE="oast-results Scan"
@@ -34,7 +34,7 @@ echo $PATH
  # 'http://3.108.44.52:8080/api/v2/import-scan/' \
  # -H 'accept: application/json' \
  # -H 'Content-Type: multipart/form-data' \
- # -H 'Authorization: Token e596a9d6f75615c59f0a80b4afa7acf695e8df61' \
+ # -H 'Authorization: Token e1fe0d1764c7411b1d7029b2d94ddcbc92e62e75' \
  # -H 'X-CSRFToken: CSRFToken' \
  # -F 'minimum_severity=Info' \
  # -F 'active=true' \
@@ -60,19 +60,19 @@ echo '\n'
 echo 'Before Retire JS Scan'
 
 curl -X 'POST' \
-  'http://3.108.44.52:8080/api/v2/import-scan/' \
+  'http://4.240.74.38:8080/api/v2/import-scan/' \
   -H 'accept: application/json' \
   -H 'Content-Type: multipart/form-data' \
-  -H 'Authorization: Token e596a9d6f75615c59f0a80b4afa7acf695e8df61' \
+  -H 'Authorization: Token e1fe0d1764c7411b1d7029b2d94ddcbc92e62e75' \
   -H 'X-CSRFToken: CSRFToken' \
   -F 'minimum_severity=Info' \
   -F 'active=true' \
   -F 'verified=true' \
   -F 'scan_type=Retire.js Scan' \
   -F 'file=@retirejs-report.json;type=application/json' \
-  -F 'product_name=Capstone Project' \
+  -F 'product_name=Test product' \
   -F 'engagement_name=test-retire.js-scan' \
-  -F 'engagement=23' \
+  -F 'engagement=5' \
   -F 'close_old_findings=false' \
   -F 'close_old_findings_product_scope=false' \
   -F 'push_to_jira=true' \
@@ -87,19 +87,19 @@ echo '\n'
 echo 'Before Nikito Scan'
   
 curl -X 'POST' \
-  'http://3.108.44.52:8080/api/v2/import-scan/' \
+  'http://4.240.74.38:8080/api/v2/import-scan/' \
   -H 'accept: application/json' \
   -H 'Content-Type: multipart/form-data' \
-  -H 'Authorization: Token e596a9d6f75615c59f0a80b4afa7acf695e8df61' \
+  -H 'Authorization: Token e1fe0d1764c7411b1d7029b2d94ddcbc92e62e75' \
   -H 'X-CSRFToken: CSRFToken' \
   -F 'minimum_severity=Info' \
   -F 'active=true' \
   -F 'verified=true' \
   -F 'scan_type=Nikto Scan' \
   -F 'file=@scan.xml;type=text/xml' \
-  -F 'product_name=Capstone Project' \
+  -F 'product_name=Test product' \
   -F 'engagement_name=Nikto Scan' \
-  -F 'engagement=27' \
+  -F 'engagement=4' \
   -F 'close_old_findings=false' \
   -F 'close_old_findings_product_scope=false' \
   -F 'push_to_jira=true' \
@@ -113,19 +113,19 @@ curl -X 'POST' \
  echo 'Before NMAP Scan'
     
  curl -X 'POST' \
-   'http://3.108.44.52:8080/api/v2/import-scan/' \
+   'http://4.240.74.38:8080/api/v2/import-scan/' \
    -H 'accept: application/json' \
    -H 'Content-Type: multipart/form-data' \
-   -H 'Authorization: Token e596a9d6f75615c59f0a80b4afa7acf695e8df61' \
+   -H 'Authorization: Token e1fe0d1764c7411b1d7029b2d94ddcbc92e62e75' \
    -H 'X-CSRFToken: CSRFToken' \
    -F 'minimum_severity=Info' \
    -F 'active=true' \
    -F 'verified=true' \
    -F 'scan_type=Nmap Scan' \
    -F 'file=@nmap-results.xml;type=text/xml' \
-   -F 'product_name=Capstone Project' \
+   -F 'product_name=Test product' \
    -F 'engagement_name=NMAP Scan19' \
-   -F 'engagement=26' \
+   -F 'engagement=3' \
    -F 'close_old_findings=false' \
    -F 'close_old_findings_product_scope=false' \
    -F 'push_to_jira=true' \
@@ -141,19 +141,19 @@ curl -X 'POST' \
  echo 'Before Trivy Scan'
     
  curl -X 'POST' \
-   'http://3.108.44.52:8080/api/v2/import-scan/' \
+   'http://4.240.74.38:8080/api/v2/import-scan/' \
    -H 'accept: application/json' \
    -H 'Content-Type: multipart/form-data' \
-   -H 'Authorization: Token e596a9d6f75615c59f0a80b4afa7acf695e8df61' \
+   -H 'Authorization: Token e1fe0d1764c7411b1d7029b2d94ddcbc92e62e75' \
    -H 'X-CSRFToken: CSRFToken' \
    -F 'minimum_severity=Info' \
    -F 'active=true' \
    -F 'verified=true' \
    -F 'scan_type=Trivy Scan' \
    -F 'file=@trivy-results.json;type=application/json' \
-   -F 'product_name=Capstone Projectt' \
+   -F 'product_name=Test product' \
    -F 'engagement_name=Trivy Scan' \
-   -F 'engagement=25' \
+   -F 'engagement=2' \
    -F 'close_old_findings=false' \
    -F 'close_old_findings_product_scope=false' \
    -F 'push_to_jira=true' \
@@ -169,19 +169,19 @@ curl -X 'POST' \
  echo 'Before NMAP Audit Scan'
     
  curl -X 'POST' \
-   'http://3.108.44.52:8080/api/v2/import-scan/' \
+   'http://4.240.74.38:8080/api/v2/import-scan/' \
    -H 'accept: application/json' \
    -H 'Content-Type: multipart/form-data' \
-   -H 'Authorization: Token e596a9d6f75615c59f0a80b4afa7acf695e8df61' \
+   -H 'Authorization: Token e1fe0d1764c7411b1d7029b2d94ddcbc92e62e75' \
    -H 'X-CSRFToken: CSRFToken' \
    -F 'minimum_severity=Info' \
    -F 'active=true' \
    -F 'verified=true' \
    -F 'scan_type=NPM Audit Scan' \
    -F 'file=@NPMAuditReport.json;type=application/json' \
-   -F 'product_name=Capstone Project' \
+   -F 'product_name=Test product' \
    -F 'engagement_name=NPM Audit Scan' \
-   -F 'engagement=24' \
+   -F 'engagement=1' \
    -F 'close_old_findings=false' \
    -F 'close_old_findings_product_scope=false' \
    -F 'push_to_jira=true' \
